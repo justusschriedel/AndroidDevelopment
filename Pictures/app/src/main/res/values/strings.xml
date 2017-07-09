@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">Pictures</string>
-    <string name="button_cat">Cat!</string>
-    <string name="button_dog">Dog!</string>
-    <string name="button_hat">Hat!</string>
-    <string name="button_flag">Flag!</string>
-    <string name="button_icecream">Ice Cream!</string>
-</resources>
