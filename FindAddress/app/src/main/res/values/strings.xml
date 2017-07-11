@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Find Address</string>
+    <string name="editText">Street Number, City, State</string>
+    <string name="button">Find</string>>
+</resources>
