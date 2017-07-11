@@ -4,4 +4,5 @@
     <string name="button2">See a star!</string>
     <string name="editMessage">Type a message!</string>
     <string name="displayButton">Display!</string>
+    <string name="button4">Look up an address!</string>
 </resources>

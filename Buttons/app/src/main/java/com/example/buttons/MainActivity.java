@@ -24,4 +24,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SeeStarActivity.class);
         startActivity(intent);
     }
+
+    public void findAddress(View view) {
+        Intent intent = new Intent(Intent.ACTION_DEFAULT);
+        startActivity(intent);
+    }
 }
