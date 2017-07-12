@@ -1,5 +1,6 @@
 package com.example.fragmentsexample;
 
+import android.net.Uri;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.content.Intent;
@@ -7,6 +8,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import static java.lang.reflect.Array.getLength;
 
 public class TitlesFragment extends ListFragment {
     boolean mDualPane;
@@ -59,6 +62,7 @@ public class TitlesFragment extends ListFragment {
     // current UI (portrait) or starting new activity where it's displayed (landscape)
     void showDetails(int index) {
         mCurCheckPosition = index;
+        int lastEl = getLength(Shakespeare.TITLES) - 1;
 
         if (mDualPane) {
             //everything can be displayed in-place (because device is in landscape), so this
@@ -76,9 +80,12 @@ public class TitlesFragment extends ListFragment {
                 //fragment inside frame
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 if (index == 0) {
-                    //not necessary; used for null case (displays details of first title in list
-                    // if there hasn't been a selection - landscape only)
                     ft.replace(R.id.details, details);
+                }
+                else if (index == lastEl) {
+                    Uri bib = Uri.parse(Shakespeare.DIALOGUE[lastEl]);
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW, bib);
+                    startActivity(webIntent);
                 }
                 else {
                     ft.replace(R.id.details, details);
@@ -90,10 +97,17 @@ public class TitlesFragment extends ListFragment {
         else {
             //device is in portrait mode, which means a new activity must be started to display
             //title details; that's what's happening here
-            Intent intent = new Intent();
-            intent.setClass(getActivity(), DetailsActivity.class);
-            intent.putExtra("index", index);
-            startActivity(intent);
+            if (index == lastEl) {
+                Uri bib = Uri.parse(Shakespeare.DIALOGUE[lastEl]);
+                Intent webIntent = new Intent(Intent.ACTION_VIEW, bib);
+                startActivity(webIntent);
+            }
+            else {
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), DetailsActivity.class);
+                intent.putExtra("index", index);
+                startActivity(intent);
+            }
         }
     }
 }

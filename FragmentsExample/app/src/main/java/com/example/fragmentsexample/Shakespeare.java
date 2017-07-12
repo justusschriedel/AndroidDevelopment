@@ -4,7 +4,7 @@ import java.lang.reflect.Array;
 
 public class Shakespeare {
     //summaries are taken from wikipedia: https://en.wikipedia.org/wiki/Shakespeare_bibliography
-    public static String[] TITLES = {"Hamlet", "Julius Caesar", "King Lear", "Macbeth", "Othello", "Romeo and Juliet"};
+    public static String[] TITLES = {"Hamlet", "Julius Caesar", "King Lear", "Macbeth", "Othello", "Romeo and Juliet", "more..."};
     public static String[] DIALOGUE = {"Prince Hamlet is visited by his father's ghost and ordered to avenge his father's " +
             "murder by killing King Claudius, his uncle. After struggling with several questions, including whether what the " +
             "ghost said is true and whether it is right for him to take revenge, Hamlet, along with almost all the other " +
@@ -28,5 +28,5 @@ public class Shakespeare {
             "in the midst of a bloody feud. Romeo, a Montague, and Juliet, a Capulet, fall in love and struggle to maintain their " +
             "relationship in the face of familial hatred. After Romeo kills Juliet's cousin Tybalt in a fit of passion, things fall " +
             "apart. Both lovers eventually commit suicide within minutes of each other, and the feuding families make peace over their " +
-            "recent grief."};
+            "recent grief.", "https://en.wikipedia.org/wiki/Shakespeare_bibliography"};
 }
