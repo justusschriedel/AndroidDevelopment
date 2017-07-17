@@ -3,4 +3,7 @@
     <string name="editText">Enter Host Name</string>
     <string name="editText2">Enter Port Number</string>
     <string name="button">Go!</string>
+    <string name="editText3">Enter Text</string>
+    <string name="textView">Echoed Text</string>
+    <string name="button2">Echo!</string>
 </resources>

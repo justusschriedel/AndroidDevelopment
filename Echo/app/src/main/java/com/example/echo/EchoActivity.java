@@ -1,10 +1,23 @@
 package com.example.echo;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class EchoActivity extends AppCompatActivity {
+    public static String output;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,14 +30,20 @@ public class EchoActivity extends AppCompatActivity {
         String portNumber = intent.getStringExtra(MainActivity.PORTNUMBER);
 
         String[] args = {hostName, portNumber};
+
         try {
             EchoClient.main(args);
         }
         catch (Exception e) {
-            //some error relating to failed server connection
+            e.printStackTrace();
         }
+    }
 
-        // TODO: 7/15/17  figure out if an EditText is needed for PrintView object in EchoClient
-        // TODO: 7/15/17  exception handler
+    public void echoButton(View view) {
+        EditText editText = (EditText) findViewById(R.id.editText3);
+        TextView textView = (TextView) findViewById(R.id.textView);
+
+        EchoClient.userInput = editText.getText().toString();
+        textView.setText(output);
     }
 }
