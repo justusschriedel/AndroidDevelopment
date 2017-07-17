@@ -9,15 +9,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
+@TargetApi(Build.VERSION_CODES.KITKAT)
 public class EchoActivity extends AppCompatActivity {
-    public static String output;
+    public static String hostName, portNumber, output;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,25 +19,24 @@ public class EchoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_echo);
 
         Intent intent = getIntent();
-
-        String hostName = intent.getStringExtra(MainActivity.HOSTNAME);
-        String portNumber = intent.getStringExtra(MainActivity.PORTNUMBER);
-
-        String[] args = {hostName, portNumber};
-
-        try {
-            EchoClient.main(args);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        hostName = intent.getStringExtra(MainActivity.HOSTNAME);
+        portNumber = intent.getStringExtra(MainActivity.PORTNUMBER);
     }
 
     public void echoButton(View view) {
+        String[] args = {hostName, portNumber};
         EditText editText = (EditText) findViewById(R.id.editText3);
         TextView textView = (TextView) findViewById(R.id.textView);
 
         EchoClient.userInput = editText.getText().toString();
-        textView.setText(output);
+
+        try {
+            EchoClient.main(args);
+            textView.setText(output);
+        }
+        catch (Exception e) {
+            System.exit(1);
+            //e.printStackTrace();
+        }
     }
 }

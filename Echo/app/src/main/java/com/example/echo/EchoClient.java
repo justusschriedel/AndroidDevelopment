@@ -2,8 +2,6 @@ package com.example.echo;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.view.View;
-import android.widget.EditText;
 
 import java.io.*;
 import java.net.*;
@@ -20,20 +18,17 @@ public class EchoClient {
             Socket echoServer = new Socket(hostName, portNumber);
             PrintWriter out = new PrintWriter(echoServer.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(echoServer.getInputStream()));
-            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));)
+        )
         {
-
-            /*while ((userInput = stdIn.readLine()) != null) {
+            /*do {
                 out.println(userInput);
-                System.out.println("echo: " + in.readLine());
-            }*/
-            do {
-                userInput = stdIn.readLine();
-                out.println(userInput);
-                //System.out.println("echo: " + in.readLine());
                 EchoActivity.output = "echo: " + in.readLine();
             }
-            while (!(userInput.equals("break")));
+            while (!(userInput.equals("break")));*/
+
+            out.println(userInput);
+            EchoActivity.output = "echo: " + in.readLine();
+            echoServer.close();
         }
         catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
