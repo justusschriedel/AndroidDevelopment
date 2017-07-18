@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class EchoActivity extends AppCompatActivity {
     public static String hostName, portNumber, output;
@@ -21,22 +24,41 @@ public class EchoActivity extends AppCompatActivity {
         Intent intent = getIntent();
         hostName = intent.getStringExtra(MainActivity.HOSTNAME);
         portNumber = intent.getStringExtra(MainActivity.PORTNUMBER);
+
+        TextView textView2 = (TextView) findViewById(R.id.textView2);
+        TextView textView3 = (TextView) findViewById(R.id.textView3);
+        textView2.setText("Host Name: " + hostName);
+        textView3.setText("Port Number: " + portNumber);
     }
 
     public void echoButton(View view) {
-        String[] args = {hostName, portNumber};
+        final String[] args = {hostName, portNumber};
         EditText editText = (EditText) findViewById(R.id.editText3);
-        TextView textView = (TextView) findViewById(R.id.textView);
+        final TextView textView = (TextView) findViewById(R.id.textView);
 
         EchoClient.userInput = editText.getText().toString();
 
-        try {
-            EchoClient.main(args);
-            textView.setText(output);
-        }
-        catch (Exception e) {
-            System.exit(1);
-            //e.printStackTrace();
-        }
+        //new EchoTask().execute(args);
+        //textView.setText(output);
+
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    EchoClient.main(args);
+                }
+                catch (UnknownHostException e) {
+                    System.exit(1);
+                }
+                catch (IOException e) {
+                    System.exit(1);
+                }
+                textView.post(new Runnable() {
+                    public void run() {
+                        textView.setText(output);
+                    }
+                });
+            }
+        }).start();
     }
 }

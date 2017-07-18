@@ -6,6 +6,8 @@ import android.os.Build;
 import java.io.*;
 import java.net.*;
 
+import static com.example.echo.R.string.textView;
+
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class EchoClient {
     public static String userInput;
@@ -16,6 +18,7 @@ public class EchoClient {
 
         try (
             Socket echoServer = new Socket(hostName, portNumber);
+            //EchoActivity.output = "hello";
             PrintWriter out = new PrintWriter(echoServer.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(echoServer.getInputStream()));
         )
@@ -23,21 +26,27 @@ public class EchoClient {
             /*do {
                 out.println(userInput);
                 EchoActivity.output = "echo: " + in.readLine();
+                //textView.setText(EchoActivity.output);
+                //echoServer.close();
             }
-            while (!(userInput.equals("break")));*/
+            while (userInput != null);*/
 
             out.println(userInput);
             EchoActivity.output = "echo: " + in.readLine();
-            echoServer.close();
+
+            //echoServer.close();
         }
         catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-            System.exit(1);
+            EchoActivity.output = "Don't know about host " + hostName;
         }
         catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " +
-                    hostName);
-            System.exit(1);
+            EchoActivity.output = "Couldn't get I/O for the connection to " + hostName;
+        }
+        catch (SecurityException e) {
+            EchoActivity.output = "The checkConnect method doesn't allow the operation";
+        }
+        catch (IllegalArgumentException e) {
+            EchoActivity.output = "The port parameter is outside the specified range of valid port values";
         }
     }
 }
