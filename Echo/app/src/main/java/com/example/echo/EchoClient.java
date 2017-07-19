@@ -20,19 +20,10 @@ public class EchoClient {
             BufferedReader in = new BufferedReader(new InputStreamReader(echoServer.getInputStream()));
         )
         {
-            do {
-                out.println(userInput.substring(0, userInput.length()-5));
-                EchoActivity.output = "echo: " + in.readLine();
-                //break;
-                //textView.setText(EchoActivity.output);
-                //echoServer.close();
-            }
-            while (!(userInput.substring(userInput.length()-5, userInput.length()).equals("break")));
+            out.println(userInput);
+            EchoActivity.output = "echo: " + in.readLine();
 
-            //out.println(userInput);
-            //EchoActivity.output = "echo: " + in.readLine();
-
-            //echoServer.close();
+            echoServer.close();
         }
         catch (UnknownHostException e) {
             EchoActivity.output = "Don't know about host " + hostName;
