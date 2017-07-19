@@ -6,8 +6,6 @@ import android.os.Build;
 import java.io.*;
 import java.net.*;
 
-import static com.example.echo.R.string.textView;
-
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class EchoClient {
     public static String userInput;
@@ -18,7 +16,6 @@ public class EchoClient {
 
         try (
             Socket echoServer = new Socket(hostName, portNumber);
-            //EchoActivity.output = "hello";
             PrintWriter out = new PrintWriter(echoServer.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(echoServer.getInputStream()));
         )

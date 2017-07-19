@@ -15,10 +15,20 @@ public class EchoServer {
 	    {
 		String inputLine;
 
+		//loop to keep server from closing after 1 echo
+		/*do {
+		    inputLine = in.readLine();
+
+		     if (inputLine != null) {
+			out.println(inputLine.toUpperCase());
+			 }
+		}
+		while (true);*/
+
 		while ((inputLine = in.readLine()) != null) {
 		    out.println(inputLine.toUpperCase());
 		    
-		}
+		    }
 	    }
 	catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "

@@ -37,7 +37,6 @@ public class EchoActivity extends AppCompatActivity {
         final TextView textView = (TextView) findViewById(R.id.textView);
 
         EchoClient.userInput = editText.getText().toString();
-        //textView.setText(EchoClient.userInput);
 
         //new EchoTask().execute(args);
         //textView.setText(output);
