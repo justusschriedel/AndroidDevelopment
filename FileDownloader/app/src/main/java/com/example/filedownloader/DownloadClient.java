@@ -30,16 +30,19 @@ public class DownloadClient {
 
 
     private void saveFile(String file, Context context) throws IOException {
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         File requestedfile = new File(path, file);
         requestedfile.createNewFile();
-
-        try { path.mkdirs(); }
-        catch (Exception e) { DownloadActivity.output = e.getMessage(); }
+        try {
+            path.mkdirs();
+        } catch (Exception e) {
+            DownloadActivity.output = e.getMessage();
+        }
 
         DataInputStream fromServer = new DataInputStream(clientSocket.getInputStream());
-        FileOutputStream fileFromServer = new FileOutputStream("/storage/emulated/0/Pictures/" + file);
-                                        //context.openFileOutput("/Documents/" + file, Context.MODE_PRIVATE);
+        FileOutputStream fileFromServer = new FileOutputStream("/storage/emulated/0/Download/" + file);
+                                        //context.openFileOutput(file, Context.MODE_PRIVATE);
+
 
         byte[] buffer = new byte[4096];
 
