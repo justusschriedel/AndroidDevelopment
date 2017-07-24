@@ -1,5 +1,6 @@
 package com.example.filedownloader;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
+    static final String ARGS = "com.example.filedownloader.ARGS";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,10 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
         final String[] args = {hostname, portnumber, filename};
 
-        new Thread(new Runnable() {
-            public void run() {
-                DownloadClient.main(args);
-            }
-        }).start();
+        Intent intent = new Intent(this, DownloadActivity.class);
+        intent.putExtra(ARGS, args);
+        startActivity(intent);
     }
 }

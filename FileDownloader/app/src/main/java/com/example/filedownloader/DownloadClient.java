@@ -1,5 +1,9 @@
 package com.example.filedownloader;
 
+import android.app.Application;
+import android.content.Context;
+import android.os.Environment;
+
 import java.net.*;
 import java.io.*;
 
@@ -15,19 +19,28 @@ public class DownloadClient {
             PrintWriter textToServer = new PrintWriter(clientSocket.getOutputStream(), true);
             textToServer.println(file);
 
-            saveFile(file);
+            saveFile(file, DownloadApplication.getContext());
 
             textToServer.close();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            DownloadActivity.output = e.getMessage();
         }
     }
 
 
-    private void saveFile(String file) throws IOException {
+    private void saveFile(String file, Context context) throws IOException {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File requestedfile = new File(path, file);
+        requestedfile.createNewFile();
+
+        try { path.mkdirs(); }
+        catch (Exception e) { DownloadActivity.output = e.getMessage(); }
+
         DataInputStream fromServer = new DataInputStream(clientSocket.getInputStream());
-        FileOutputStream fileFromServer = new FileOutputStream(file);
+        FileOutputStream fileFromServer = new FileOutputStream("/storage/emulated/0/Pictures/" + file);
+                                        //context.openFileOutput("/Documents/" + file, Context.MODE_PRIVATE);
+
         byte[] buffer = new byte[4096];
 
         int filesize = fromServer.readInt();
@@ -37,10 +50,13 @@ public class DownloadClient {
         while((read = fromServer.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
             totalRead += read;
             remaining -= read;
-            System.out.println("read " + totalRead + " bytes.");
+            DownloadActivity.output = "read " + totalRead + " bytes.";
             fileFromServer.write(buffer, 0, read);
         }
 
+        DownloadActivity.output= "read " + totalRead + " bytes\ndownload complete";
+
+        fileFromServer.flush();
         fileFromServer.close();
         fromServer.close();
     }
