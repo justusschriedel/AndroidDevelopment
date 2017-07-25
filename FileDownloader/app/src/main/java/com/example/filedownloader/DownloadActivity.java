@@ -1,5 +1,6 @@
 package com.example.filedownloader;
 
+import android.content.ActivityNotFoundException;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -23,7 +24,7 @@ import static android.os.Environment.getExternalStorageDirectory;
 
 public class DownloadActivity extends AppCompatActivity {
     public static String output;
-    String[] args = {};
+    String[] args;
     static final String TEXT = "com.example.fileDownload.TEXT";
 
     @Override
@@ -54,5 +55,42 @@ public class DownloadActivity extends AppCompatActivity {
         }).start();
 
 
+    }
+
+    public void openFile(View view) {
+        TextView textView = (TextView) findViewById(R.id.textView);
+
+        String filename = args[2];
+
+        File file = new File(Environment.getExternalStorageDirectory(), "/Download/" + filename);
+        Uri fileUri = Uri.fromFile(file);
+
+        Intent openIntent = new Intent(Intent.ACTION_VIEW);
+        openIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        if (filename.endsWith(".txt") || filename.endsWith(".doc")) {
+            openIntent.setDataAndType(fileUri, "text/plain");
+        }
+        else if (filename.endsWith(".pdf")) {
+            openIntent.setDataAndType(fileUri, "application/pdf");
+        }
+        else if (filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png") ||
+        filename.endsWith(".bmp") || filename.endsWith(".gif")) {
+            openIntent.setDataAndType(fileUri, "image/" + filename.substring(filename.indexOf('.') + 1));
+        }
+        else if (filename.endsWith(".wav") || filename.endsWith(".mp4")) {
+            openIntent.setDataAndType(fileUri, "video/" + filename.substring(filename.indexOf('.') + 1));
+        }
+        else {
+            textView.setText("file cannot be displayed");
+            return;
+        }
+
+        try {
+            startActivity(openIntent);
+        }
+        catch (ActivityNotFoundException e) {
+            textView.setText("file cannot be displayed");
+        }
     }
 }
