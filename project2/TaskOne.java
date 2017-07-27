@@ -14,6 +14,8 @@ public class TaskOne {
 	File file = new File(fileName);
 	int fileSize = Math.toIntExact(file.length());
 
+	fileBytes = new byte[fileSize];
+	
 	try {
 	    fromFile = new FileInputStream(file);
 	    fromFile.read(fileBytes, 0, fileSize);
@@ -24,16 +26,6 @@ public class TaskOne {
 	catch (IOException e) {
 	    e.printStackTrace();
 	}
-
-	fileBytes = new byte[fileSize];
-	
-	/*
-	  for (int i = 1622; i < 1704; i++) {
-	    System.out.print(fileBytes[i] + " ");
-	    }
-	*/
-
-	System.out.println();
-	System.out.println((int) fileBytes[0]);
     }
+	
 }
