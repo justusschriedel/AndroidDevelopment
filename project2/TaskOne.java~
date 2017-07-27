@@ -1,0 +1,20 @@
+import java.util.*;
+import java.io.*;
+
+public class TaskOne {
+    public static void main(String[] args) {
+	FileInputStream fromFile;
+	Scanner scan = new Scanner(System.in);
+	byte[] fileBytes = new byte[24];
+
+	System.out.println("Enter .pcap file name:");
+	String fileName = scan.nextLine();
+	fromFile = new FileInputStream(fileName);
+
+	fromFile.read(fileBytes, 0, 24);
+
+	for (int i = 0; i < 24; i++) {
+	    System.out.println(fileBytes[i]);
+	}
+    }
+}
