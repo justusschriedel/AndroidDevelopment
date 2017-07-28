@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.*;
+import java.nio.*;
 
 public class TaskOne {
     public int fileSize, totalPackets, totalIP, totalTCP, totalUDP, totalConn;
@@ -8,6 +9,7 @@ public class TaskOne {
 	FileInputStream fromFile;
 	Scanner scan = new Scanner(System.in);
 	byte[] fileBytes;
+	//ByteBuffer bytes;
 
 	System.out.println("Enter .pcap file name:");
 	String fileName = scan.nextLine();
@@ -26,6 +28,10 @@ public class TaskOne {
 	catch (IOException e) {
 	    e.printStackTrace();
 	}
+
+	ByteBuffer bytes = ByteBuffer.wrap(fileBytes);
+
+	System.out.println(bytes.getInt(36));
     }
 	
 }
