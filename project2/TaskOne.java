@@ -9,20 +9,20 @@ public class TaskOne {
 	int fileSize, totalPackets, totalIP, totalTCP, totalUDP, totalConn;
 	FileInputStream fromFile;
 	Scanner scan = new Scanner(System.in);
-	byte[] fileBytes;
-	ByteBuffer bytes;
+	byte[] bytes;
+	//ByteBuffer bytes;
 
 	System.out.println("Enter .pcap file name:");
 	String fileName = scan.nextLine();
 
 	File file = new File(fileName);
-	int fileSize = Math.toIntExact(file.length());
+	fileSize = Math.toIntExact(file.length());
 
-	fileBytes = new byte[fileSize];
+	bytes = new byte[fileSize];
 	
 	try {
 	    fromFile = new FileInputStream(file);
-	    fromFile.read(fileBytes, 0, fileSize);
+	    fromFile.read(bytes, 0, fileSize);
 	}
 	catch (FileNotFoundException e) {
 	    e.printStackTrace();
@@ -31,30 +31,53 @@ public class TaskOne {
 	    e.printStackTrace();
 	}
 
-	ByteBuffer bytes = ByteBuffer.wrap(fileBytes);
-	IntBuffer fileInfo = bytes.asIntBuffer();
+	//bytes = ByteBuffer.wrap(fileBytes);
 
-	System.out.println(fileInfo.get(36));
+	//System.out.println(fileInfo.get(36));
 
 	totalPackets = 0;
 	totalIP = 0;
 	totalTCP = 0;
 	totalUDP = 0;
 	totalConn = 0;
-
-	System.out.println(bytes.order(ByteOrder.LITTLE_ENDIAN).getInt(402));
 	
-	int i = 36; int x = 0;
-	while (i < fileBytes.length && x < 45) {
-	    System.out.println(i);
-	    totalPackets++;
-	    int size = fileBytes[i];
-	    i += size + 12;
-	    x++;
+	//bytes.order(ByteOrder.BIG_ENDIAN);
+	//bytes.get(array, 0, fileSize);
+
+	/*for (int i = 0; i < 126; i++) {
+	    //System.out.println(bytes.order(ByteOrder.BIG_ENDIAN).getInt(i));
+	    System.out.print(array[i] + " ");
 	}
 
-	System.out.println(totalPackets)
+	System.out.println();*/
+	
+	//System.out.println(bytes.order(ByteOrder.BIG_ENDIAN).getInt(36));
+	
+	/*int i = 42;
+	while (i < fileBytes.length) {
+	    //System.out.println(i);
+	    totalPackets++;
+	    int size = fileBytes[i] + fileBytes[i+1];
+	    i += size + 18;
+	}
 
+	System.out.println(totalPackets);*/
+
+	//TODO: use isOne method to analyze bits and find values that convey IPv4, TCP, UDP
+	//TODO: use hashmap for TCP connections
+
+    }
+
+    //method idea found on stackoverflow
+    //https://stackoverflow.com/questions/18931283/checking-individual-bits-in-a-byte-array-in-java
+    public static boolean isOne(byte[] array, int bit) {
+	int index = bit / 8;  //which byte contains this bit in the array
+	int position = bit % 8;
+
+	return (array[index] >> position & 1) == 1;
+
+	//TODO: figure out if bits are being shifted in right direction (endianness)
+	//TODO: figure out what & is doing here
     }
 }
 	/*	
