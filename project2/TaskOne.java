@@ -39,30 +39,15 @@ public class TaskOne {
 	totalUDP = 0;
 	totalConn = 0;
 
-	int i = 36;
-	while (i < bytes.length) {
-	    int size = getValue(bytes, i, 0, 8);
-	    int sum = 0, total8 = 0, b = 1;
-	    
-	    if (size == 255) {
-	        do {
-		    total8 = getValue(bytes, i+b, 0, 8);
-		    sum += total8;
-		    b++;
-		}
-		while (total8 != 0);
-
-		size += sum;
-	    }
-
-	    totalPackets++;
-	    i += (size + 12);
-	    //System.out.println(i);
-	    System.out.println(totalPackets);
-	}
-
-	System.out.println(totalPackets);
 	//TODO: use hashmap for TCP connections
+	//TODO: get totalPackets, totalIP, totalTCP, totalUDP, totalConn
+
+	/*System.out.println(get16BitVal(bytes, 56));
+	System.out.println(get16BitVal(bytes, 146));
+	System.out.println(get16BitVal(bytes, 236));
+	System.out.println(get16BitVal(bytes, 326));
+	System.out.println(get16BitVal(bytes, 408));*/
+
     }
 
     //checks if bit in given byte at given position is 1
@@ -79,7 +64,7 @@ public class TaskOne {
     //  index: byte where wanted bits are
     //  offset: where getValue should start summing bits
     //  limit: where getValue should stop summing bits
-    public static int getValue(byte[] array, int index, int offset, int limit) {
+    public static int getByteVal(byte[] array, int index, int offset, int limit) {
 	int value = 0, power = 0;
 
 	for (int i = offset; i < limit; i++) {
@@ -90,5 +75,36 @@ public class TaskOne {
 	}
 
 	return value;
+    }
+
+    //TODO: add description
+    public static int get16BitVal(byte[] array, int index) {
+	int value = 0;
+
+	for (int i = 0; i < 16; i++) {
+	    if (i >= 8) {
+		if (isOne(array, index, i-8)) {
+		    value += Math.pow(2.0, (double) i);
+		}	    }
+	    else {
+		if (isOne(array, index+1, i)) {
+		    value += Math.pow(2.0, (double) i);
+		}
+	    }
+	}
+
+	return value;
+    }
+
+    //TODO: rewrite this method like get16BitVal
+    //TODO: add description
+    public static int get32BitVal(byte[] array, int start) {
+	int total = 0;
+
+	for (int i = start; i < start+4; i++) {
+	    total += getByteVal(array, i, 0, 8);
+	}
+
+	return total;
     }
 }
