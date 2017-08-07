@@ -9,10 +9,11 @@ public class TaskOne {
     
     
     public static void main(String[] args) {
-	int fileSize, totalPackets, totalIP, totalTCP, totalUDP, totalConn;
+	int fileSize, totalPackets, totalIP, totalTCP, totalUDP;//, totalConn;
 	FileInputStream fromFile;
 	Scanner scan = new Scanner(System.in);
 	byte[] bytes;
+	HashMap<TCPConnection, Integer> tcpConn = new HashMap<TCPConnection, Integer>();
 
 	System.out.println("Enter .pcap file name:");
 	String fileName = scan.nextLine();
@@ -37,16 +38,43 @@ public class TaskOne {
 	totalIP = 0;
 	totalTCP = 0;
 	totalUDP = 0;
-	totalConn = 0;
+	//totalConn = 0;
 
 	//TODO: use hashmap for TCP connections
-	//TODO: get totalPackets, totalIP, totalTCP, totalUDP, totalConn
+	//TODO: store source, dest IP and source, dest port into string;
+	//      store string in hashmap
 
 	/*System.out.println(get16BitVal(bytes, 56));
 	System.out.println(get16BitVal(bytes, 146));
 	System.out.println(get16BitVal(bytes, 236));
 	System.out.println(get16BitVal(bytes, 326));
 	System.out.println(get16BitVal(bytes, 408));*/
+
+	int i = 54;
+	while (i < bytes.length) {
+	    int version = getBitVal(bytes, i, 4, 8);
+	    int size = get16BitVal(bytes, i+2);
+	    int protocol = getBitVal(bytes, i+9, 0, 8);
+	    System.out.println(version);
+	    System.out.println(size);
+	    System.out.println(protocol);
+
+	    int sIP = get32BitVal();
+	    int dIP = get32BitVal();
+	    int sPort = ;
+	    int dPort = ;
+	    
+	    if (version == 4) totalIP++;
+	    
+	    totalPackets++;
+	    
+	    if (protocol == 6) {totalTCP++;}
+	    else if (protocol == 17) {totalUDP++;}
+	    
+	    i += (size + 30);;
+	}
+
+	System.out.println(totalPackets + " " + totalIP + " " + totalTCP + " " + totalUDP);
 
     }
 
@@ -64,7 +92,7 @@ public class TaskOne {
     //  index: byte where wanted bits are
     //  offset: where getValue should start summing bits
     //  limit: where getValue should stop summing bits
-    public static int getByteVal(byte[] array, int index, int offset, int limit) {
+    public static int getBitVal(byte[] array, int index, int offset, int limit) {
 	int value = 0, power = 0;
 
 	for (int i = offset; i < limit; i++) {
@@ -96,15 +124,35 @@ public class TaskOne {
 	return value;
     }
 
-    //TODO: rewrite this method like get16BitVal
     //TODO: add description
-    public static int get32BitVal(byte[] array, int start) {
-	int total = 0;
+    public static int get32BitVal(byte[] array, int index) {
+	int value = 0;
 
-	for (int i = start; i < start+4; i++) {
-	    total += getByteVal(array, i, 0, 8);
+	for (int i = 0; i < 32; i++) {
+	    if (i >= 24) {
+		if (isOne(array, index, i-24)) {
+		    value += Math.pow(2.0, (double) i);
+		}
+	    }
+	    else if (i >= 16) {
+		if (isOne(array, index+1, i-16)) {
+		    value += Math.pow(2.0, (double) i);
+		}
+	    }
+	    else if (i >= 8) {
+		if (isOne(array, index+2, i-8)) {
+		    value += Math.pow(2.0, (double) i);
+		}
+	    }
+	    else {
+		if (isOne(array, index+3, i)) {
+		    value += Math.pow(2.0, (double) i);
+		}
+	    }
 	}
 
-	return total;
+	return value;
     }
 }
+
+
