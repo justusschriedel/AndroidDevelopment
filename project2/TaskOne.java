@@ -9,11 +9,11 @@ public class TaskOne {
     
     
     public static void main(String[] args) {
-	int fileSize, totalPackets, totalIP, totalTCP, totalUDP;//, totalConn;
+	int fileSize, totalPackets, totalIP, totalTCP, totalUDP;
 	FileInputStream fromFile;
 	Scanner scan = new Scanner(System.in);
 	byte[] bytes;
-	HashMap<TCPConnection, Integer> tcpConn = new HashMap<TCPConnection, Integer>();
+	HashMap<String, Integer> tcpConn = new HashMap<String, Integer>();
 
 	System.out.println("Enter .pcap file name:");
 	String fileName = scan.nextLine();
@@ -38,43 +38,70 @@ public class TaskOne {
 	totalIP = 0;
 	totalTCP = 0;
 	totalUDP = 0;
-	//totalConn = 0;
-
-	//TODO: use hashmap for TCP connections
-	//TODO: store source, dest IP and source, dest port into string;
-	//      store string in hashmap
-
-	/*System.out.println(get16BitVal(bytes, 56));
-	System.out.println(get16BitVal(bytes, 146));
-	System.out.println(get16BitVal(bytes, 236));
-	System.out.println(get16BitVal(bytes, 326));
-	System.out.println(get16BitVal(bytes, 408));*/
-
+	
 	int i = 54;
 	while (i < bytes.length) {
 	    int version = getBitVal(bytes, i, 4, 8);
-	    int size = get16BitVal(bytes, i+2);
-	    int protocol = getBitVal(bytes, i+9, 0, 8);
-	    System.out.println(version);
-	    System.out.println(size);
-	    System.out.println(protocol);
 
-	    int sIP = get32BitVal();
-	    int dIP = get32BitVal();
-	    int sPort = ;
-	    int dPort = ;
-	    
-	    if (version == 4) totalIP++;
+	    if (version == 4) {
+		totalIP++;
+
+		int ihl = (getBitVal(bytes, i, 0, 4)*32)/8;
+		int size = get16BitVal(bytes, i+2);
+		int protocol = getBitVal(bytes, i+9, 0, 8);
+
+		System.out.println(size + " " + get32BitVal(bytes, i-18));
+		
+		if (protocol == 6) {
+		    totalTCP++;
+		    
+		    int sIP = get32BitVal(bytes, i+12);
+		    int dIP = get32BitVal(bytes, i+16);
+		    int sPort = get16BitVal(bytes, i+ihl);
+		    int dPort = get16BitVal(bytes, i+ihl+2);
+		    
+		    String connA = "" + sIP + sPort + dIP + dPort;
+		    String connB = "" + dIP + dPort + sIP + sPort;
+		    
+		    if (tcpConn.containsKey(connA)) tcpConn.put(connA, tcpConn.get(connA)+1);
+		    else if (tcpConn.containsKey(connB)) tcpConn.put(connB, tcpConn.get(connB)+1);
+		    else tcpConn.put(connA, 1);
+ 
+		}
+		else if (protocol == 17) {
+		    totalUDP++;
+		}
+
+		if ((size+14) < 60) {
+		    int padding = 60 - (size + 14);
+
+		    if (i+size+padding < bytes.length) {
+			int count = 0;
+			for (int x = (i+size); x < (i+size+padding); x++) {
+			    int val = getBitVal(bytes, x, 0, 8);
+			    
+			    if (val == 0) count++;
+			}
+			
+			if (count == padding) i += (size + 30 + padding);
+			else i += (size + 30);
+		    }
+		    else i += (size + 30);
+		}
+		else  i += (size + 30);
+	    }
+	    else {
+		int size = get32BitVal(bytes, i-18);
+		System.out.println(size);
+
+		i += (size + 16);
+		//TODO: find error or find way to handle this case (when version != 4)
+	    }
 	    
 	    totalPackets++;
-	    
-	    if (protocol == 6) {totalTCP++;}
-	    else if (protocol == 17) {totalUDP++;}
-	    
-	    i += (size + 30);;
 	}
 
-	System.out.println(totalPackets + " " + totalIP + " " + totalTCP + " " + totalUDP);
+	System.out.println(totalPackets + " " + totalIP + " " + totalTCP + " " + totalUDP + " " + tcpConn.size());
 
     }
 
