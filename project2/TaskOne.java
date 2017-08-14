@@ -11,12 +11,10 @@ public class TaskOne {
     public static void main(String[] args) {
 	int fileSize, totalPackets, totalIP, totalTCP, totalUDP;
 	FileInputStream fromFile;
-	Scanner scan = new Scanner(System.in);
 	byte[] bytes;
 	HashMap<String, Integer> tcpConn = new HashMap<String, Integer>();
 
-	System.out.println("Enter .pcap file name:");
-	String fileName = scan.nextLine();
+	String fileName = args[0];
 
 	File file = new File(fileName);
 	fileSize = Math.toIntExact(file.length());
@@ -42,15 +40,14 @@ public class TaskOne {
 	int i = 54;
 	while (i < bytes.length) {
 	    int version = getBitVal(bytes, i, 4, 8);
+	    int ethertype = get16BitVal(bytes, i-2);
 
-	    if (version == 4) {
+	    if (version == 4 && ethertype >= 1536) {
 		totalIP++;
 
 		int ihl = (getBitVal(bytes, i, 0, 4)*32)/8;
 		int size = get16BitVal(bytes, i+2);
 		int protocol = getBitVal(bytes, i+9, 0, 8);
-
-		System.out.println(size + " " + get32BitVal(bytes, i-18));
 		
 		if (protocol == 6) {
 		    totalTCP++;
@@ -68,9 +65,10 @@ public class TaskOne {
 		    else tcpConn.put(connA, 1);
  
 		}
-		else if (protocol == 17) {
+		else if (protocol == 17 || protocol == 1) {
 		    totalUDP++;
 		}
+		//else System.out.println(protocol);
 
 		if ((size+14) < 60) {
 		    int padding = 60 - (size + 14);
@@ -91,11 +89,9 @@ public class TaskOne {
 		else  i += (size + 30);
 	    }
 	    else {
-		int size = get32BitVal(bytes, i-18);
-		System.out.println(size);
+		int size = bytes[i-18];
 
 		i += (size + 16);
-		//TODO: find error or find way to handle this case (when version != 4)
 	    }
 	    
 	    totalPackets++;
@@ -180,6 +176,7 @@ public class TaskOne {
 
 	return value;
     }
+    
 }
 
 
