@@ -9,7 +9,7 @@ public class TaskTwo {
 	int filesize = Math.toIntExact(file.length());
 	FileInputStream fromFile;
 	byte[] bytes = new byte[filesize];
-	HashMap<String, ArrayList<Integer>> connections = new HashMap<String, ArrayList<Integer>>(); 
+	HashMap<String, ArrayList<Pair<Integer, Integer>>> connections = new HashMap<String, ArrayList<Pair<Integer, Integer>>>(); 
 
 	try {
 	    fromFile = new FileInputStream(file);
@@ -52,15 +52,14 @@ public class TaskTwo {
 
 			if (connections.containsKey(tcpConn)) {
 			    int data = length - ihl - dataOffset;
-			    int uplink = connections.get(tcpConn).get(0) + data;
-			    int downlink = connections.get(tcpConn).get(1);
+			    int uplink = connections.get(tcpConn).get(0).getFirst() + data;
+			    int downlink = connections.get(tcpConn).get(0).getSecond();
+			    int seqNumber = TaskOne.get32BitVal(bytes, i+ihl+4);
 			    
-			    ArrayList<Integer> dataSent = connections.get(tcpConn);
+			    ArrayList<Pair<Integer, Integer>> dataSent = connections.get(tcpConn);
 			    dataSent.remove(0);
-			    dataSent.remove(0);
-			    dataSent.add(0, uplink);
-			    dataSent.add(1, downlink);
-			    dataSent.add(i);
+			    dataSent.add(0, new Pair(uplink, downlink));
+			    dataSent.add(new Pair(i, seqNumber));
 
 			    connections.put(tcpConn, dataSent);
 			}
@@ -68,11 +67,11 @@ public class TaskTwo {
 			    int data = length - ihl - dataOffset;
 			    int uplink = data;
 			    int downlink = 0;
+			    int seqNumber = TaskOne.get32BitVal(bytes, i+ihl+4);
 			    
-			    ArrayList<Integer> dataSent = new ArrayList<Integer>();
-			    dataSent.add(uplink);
-			    dataSent.add(downlink);
-			    dataSent.add(i);
+			    ArrayList<Pair<Integer, Integer>> dataSent = new ArrayList<Pair<Integer, Integer>>();
+			    dataSent.add(new Pair(uplink, downlink));
+			    dataSent.add(new Pair(i, seqNumber));
 
 			    connections.put(tcpConn, dataSent);
 			}
@@ -92,15 +91,14 @@ public class TaskTwo {
 
 			if (connections.containsKey(tcpConn)) {
 			    int data = length - ihl - dataOffset;
-			    int uplink = connections.get(tcpConn).get(0);
-			    int downlink = connections.get(tcpConn).get(1) + data;
+			    int uplink = connections.get(tcpConn).get(0).getFirst();
+			    int downlink = connections.get(tcpConn).get(0).getSecond() + data;
+			    int seqNumber = TaskOne.get32BitVal(bytes, i+ihl+4);
 
-			    ArrayList<Integer> dataSent = connections.get(tcpConn);
+			    ArrayList<Pair<Integer, Integer>> dataSent = connections.get(tcpConn);
 			    dataSent.remove(0);
-			    dataSent.remove(0);
-			    dataSent.add(0, uplink);
-			    dataSent.add(1, downlink);
-			    dataSent.add(i);
+			    dataSent.add(0, new Pair(uplink, downlink));
+			    dataSent.add(new Pair(i, seqNumber));
 
 			    connections.put(tcpConn, dataSent);
 			}
@@ -108,11 +106,11 @@ public class TaskTwo {
 			    int data = length - ihl - dataOffset;
 			    int uplink = 0;
 			    int downlink = data;
+			    int seqNumber = TaskOne.get32BitVal(bytes, i+ihl+4);
 
-			    ArrayList<Integer> dataSent = new ArrayList<Integer>();
-			    dataSent.add(uplink);
-			    dataSent.add(downlink);
-			    dataSent.add(i);
+			    ArrayList<Pair<Integer, Integer>> dataSent = new ArrayList<Pair<Integer, Integer>>();
+			    dataSent.add(new Pair(uplink, downlink));
+			    dataSent.add(new Pair(i, seqNumber));
 
 			    connections.put(tcpConn, dataSent);
 			}
@@ -148,22 +146,127 @@ public class TaskTwo {
 	}
 	System.out.println(totalPackets + " " + connections.size() + "\n");
 	
+	String uplink = "", downlink = "";
 	Set<String> keySet = connections.keySet();
 	for (String s : keySet) {
-	    String output = s + "" + connections.get(s).get(0) + " " + connections.get(s).get(1) + " ";
+	    ArrayList<Pair<Integer, Integer>> list = connections.get(s);
+	    ArrayList<Pair<Integer, Integer>> tempUp = new ArrayList<Pair<Integer, Integer>>();
+	    ArrayList<Pair<Integer, Integer>> tempDown = new ArrayList<Pair<Integer, Integer>>();
+	    String connOutput = s + "" + list.get(0).getFirst() + " " + list.get(0).getSecond() + " ";
 
-	    for (int x = 2; x < connections.get(s).size(); x++) {
-		output += connections.get(s).get(x) + " ";
+	    if ((list.get(0).getFirst() != 0) || (list.get(0).getSecond() != 0)) {
+		for (int x = 1; x < list.size(); x++) {
+		    int index = list.get(x).getFirst();
+
+		    int length = TaskOne.get16BitVal(bytes, index+2); 
+		    int ihl = (TaskOne.getBitVal(bytes, index, 0, 4)*32)/8;
+		    int dataOffset = (TaskOne.getBitVal(bytes, index+ihl+12, 4, 8)*32)/8;
+
+		    if ((length - ihl - dataOffset) != 0) {
+			int destPort = TaskOne.get16BitVal(bytes, index+ihl+2);
+
+			if (destPort == 80) {
+			    //uplink
+			    tempUp.add(list.get(x));
+			}
+			else {
+			    //downlink
+			    tempDown.add(list.get(x));
+			}
+		    }
+		}
 	    }
+	    
+	    System.out.println(connOutput);
+	    
+	    ArrayList<Pair<Integer, Integer>> uplinkData = sort(tempUp);
+	    ArrayList<Pair<Integer, Integer>> downlinkData = sort(tempDown);
 
-	    System.out.println(output);
-	    System.out.println();
+	    int z = 0;
+	    while (z < uplinkData.size() || z < downlinkData.size()) {
+		if (z < uplinkData.size()) {
+		    int index = uplinkData.get(z).getFirst();
+		    
+		    int length = TaskOne.get16BitVal(bytes, index+2); 
+		    int ihl = (TaskOne.getBitVal(bytes, index, 0, 4)*32)/8;
+		    int dataOffset = (TaskOne.getBitVal(bytes, index+ihl+12, 4, 8)*32)/8;
+
+		    for (int q = index+ihl+dataOffset; q < index+length; q++) {
+			uplink += bytes[q] + " ";
+		    }
+		}
+
+		if (z < downlinkData.size()) {
+		    int index = downlinkData.get(z).getFirst();
+		    
+		    int length = TaskOne.get16BitVal(bytes, index+2); 
+		    int ihl = (TaskOne.getBitVal(bytes, index, 0, 4)*32)/8;
+		    int dataOffset = (TaskOne.getBitVal(bytes, index+ihl+12, 4, 8)*32)/8;
+
+		    for (int q = index+ihl+dataOffset; q < index+length; q++) {
+			downlink += bytes[q] + " ";
+		    }
+		}
+
+		z++;
+	    }
 	}
+
+	System.out.println(uplink + downlink);
 	//TODO: use sequence numbers and acknowledgment numbers to determine order of data in stream
 	//      and output the data for each connection in the right order (in binary?)
 	//remember: the side sending data makes seq number = TCP length + previous seq number and makes ack
 	//          number = ?something?; side sending acknowledgment of receiving data (but not sending data)
 	//          makes received seq number ack number and received ack number seq number (from what I could
 	//          see on wireshark)
+    }
+
+    public static ArrayList<Pair<Integer, Integer>> sort(ArrayList<Pair<Integer, Integer>> list) {
+	ArrayList<Pair<Integer, Integer>> sorted = new ArrayList<Pair<Integer, Integer>>();
+	
+	for (int i = 0; i < list.size(); i++) {
+	    int curr = list.get(i).getSecond();
+
+	    if (sorted.isEmpty()) {
+		sorted.add(list.get(i));
+	    }
+	    else {
+		int x = 0;
+		while (true) {
+		    int seq = sorted.get(x).getSecond();
+
+		    if (!(x-1 < 0) && ((curr < seq) && (curr > sorted.get(x-1).getSecond()))) {
+			sorted.add(x, list.get(i));
+			break;
+		    }
+		    else if (!(x+1 >= sorted.size()) && ((curr > seq) && (curr < sorted.get(x+1).getSecond()))) {
+			sorted.add(x, list.get(i));
+			break;
+		    }
+		    else if (curr < seq) {
+			if (x > 0) x--;
+			else {
+			    sorted.add(x, list.get(i));
+			    break;
+			}
+		    }
+		    else if (curr > seq) {
+			if (x < sorted.size()-1) x++;
+			else {
+			    sorted.add(list.get(i));
+			    break;
+			}
+		    }
+		    else {
+			sorted.add(x, list.get(i));
+			break;
+		    }
+			
+		    
+		}
+	    }
+	}
+
+	return sorted;
     }
 }
