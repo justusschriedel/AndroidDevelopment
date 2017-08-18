@@ -4,12 +4,14 @@ import java.nio.*;
 
 public class TaskTwo {
     public static void main(String[] args) {
-	String filename = args[0];
+	String filename = "test.pcap";
 	File file = new File(filename);
 	int filesize = Math.toIntExact(file.length());
 	FileInputStream fromFile;
+	FileOutputStream outputFile;
 	byte[] bytes = new byte[filesize];
-	HashMap<String, ArrayList<Pair<Integer, Integer>>> connections = new HashMap<String, ArrayList<Pair<Integer, Integer>>>(); 
+	//HashMap<String, ArrayList<Pair<Integer, Integer>>> connections = new HashMap<String, ArrayList<Pair<Integer, Integer>>>();
+	HashMap<Integer, Pair<String, String>> seqNums = new HashMap<Integer, Pair<String, String>>();
 
 	try {
 	    fromFile = new FileInputStream(file);
@@ -22,7 +24,8 @@ public class TaskTwo {
 	    e.printStackTrace();
 	}
 
-	int totalPackets = 0;
+	//storing bytes from byte array into hashmap
+	//int totalPackets = 0;
 	int i = 54;
 	while (i < bytes.length) {
 	    int version = TaskOne.getBitVal(bytes, i, 4, 8);
@@ -33,11 +36,142 @@ public class TaskTwo {
 		int protocol = TaskOne.getBitVal(bytes, i+9, 0, 8);
 
 		if (protocol == 6) {
+		    String srcIP = "", destIP = "";
 		    int dataOffset = (TaskOne.getBitVal(bytes, i+ihl+12, 4, 8)*32)/8;
 		    int srcPort = TaskOne.get16BitVal(bytes, i+ihl);
 		    int destPort = TaskOne.get16BitVal(bytes, i+ihl+2);
+		    int seq = TaskOne.get32BitVal(bytes, i+ihl+4);
+		    String data = "";
+		    
+		    for (int x = 0; x < 3; x++) {
+			srcIP += TaskOne.getBitVal(bytes, i+12+x, 0, 8) + ".";
+			destIP += TaskOne.getBitVal(bytes, i+16+x, 0, 8) + ".";
+		    }
 
-		    if (destPort == 80) {
+		    for (int x = i+ihl+dataOffset; x < i+length; x++) {
+			data += bytes[x];
+		    }
+
+		    String tcpConn = srcIP + srcPort + " " + destIP + destPort;
+
+		    seqNums.put(seq, new Pair<String, String>(tcpConn, data));  
+		}
+
+		//dealing with padding
+		if ((length+14) < 60) {
+		    int padding = 60 - (length + 14);
+
+		    if ((i+length+padding) < bytes.length) {
+			int count = 0;
+			for (int x = i+length; x < i+length+padding; x++) {
+			    int value = TaskOne.getBitVal(bytes, x, 0, 8);
+			    
+			    if (value == 0) count++;
+			}
+			if (count == padding) {
+			    i += length + padding + 30;
+			}
+			else i += length + 30;
+		    }
+		    else i += length + 30;
+		}
+		else i += length + 30;
+	    }
+	    else {
+		int length = bytes[i-18];
+
+		i += length + 16;
+	    }
+
+	    //totalPackets++;
+	}
+	//System.out.println(totalPackets + " " + connections.size() + "\n");
+
+	//looking over table info; preparing to send to output file
+	Object[] sortedSeqs = seqNums.keySet().toArray();
+	Arrays.sort(sortedSeqs); //sorts numbers in ascending order
+
+	ArrayList<String> ips = new ArrayList<String>();
+	ArrayList<String> data = new ArrayList<String>();
+
+	for (Object x : sortedSeqs) {
+	    Pair<String, String> pair = seqNums.get(x);
+	    String ip = pair.getFirst();
+	    String datum = pair.getSecond();
+
+	    if (!ips.contains(ip)) {
+		ips.add(ip);
+
+		ArrayList<String> temp = sort(ips);
+
+		ips.removeAll(ips);
+		ips.addAll(temp);
+		System.out.println(ips.indexOf(ip));
+		data.add(ips.indexOf(ip), datum);
+	    }
+	    else {
+		int index = ips.indexOf(ip);
+		String temp = data.get(index) + "" + datum;
+
+		data.remove(index);
+		data.add(index, temp);
+	    }
+	}
+
+	String connections = "";
+	for (int y = 0; y < ips.size(); y++) {
+	    String curr = ips.get(y);
+	    
+	    if (!curr.endsWith("80")) {
+		String[] temp = curr.split(" ");
+		String newIP = temp[2] + " " + temp[3] + " " + temp[0] + " " + temp[1];
+
+		for (int z = 0; z < ips.size(); z++) {
+		    String correctIP = ips.get(z);
+
+		    if (newIP.equals(correctIP)) {
+		        int uplink = data.get(z).getBytes().length;
+			int downlink = data.get(y).getBytes().length;
+
+			connections += correctIP + " " + uplink + " " + downlink + "\n";
+
+			String d = data.get(z) + "" +  data.get(y);
+			System.out.println(connections + d);
+
+			data.remove(z);
+			data.add(z, d);
+
+			ips.remove(y);
+			ips.remove(z);
+			data.remove(y);
+
+			break;
+		    }
+		}
+	    }
+	}
+
+	//TODO: output connections string and data array list to .out file
+	//TODO: finish sort method
+	//TODO: debug/optimize code
+	    
+    }
+
+    //sorts elements of given arraylist in ascending order
+    public static ArrayList<String> sort(ArrayList<String> unsorted) {
+	ArrayList<String> sorted = new ArrayList<String>();
+
+	for (String s : unsorted) {
+	    if (!sorted.isEmpty()) {
+		
+	    }
+	    else sorted.add(s);
+	}
+
+	return sorted;
+    }
+}
+/*if (destPort == 80) {
 			String srcIP = "", destIP = "";
 
 			for (int x = 0; x < 3; x++) {
@@ -114,39 +248,9 @@ public class TaskTwo {
 
 			    connections.put(tcpConn, dataSent);
 			}
-		    }
-		}
+		    }*/
 
-		if ((length+14) < 60) {
-		    int padding = 60 - (length + 14);
-
-		    if ((i+length+padding) < bytes.length) {
-			int count = 0;
-			for (int x = i+length; x < i+length+padding; x++) {
-			    int value = TaskOne.getBitVal(bytes, x, 0, 8);
-			    
-			    if (value == 0) count++;
-			}
-			if (count == padding) {
-			    i += length + padding + 30;
-			}
-			else i += length + 30;
-		    }
-		    else i += length + 30;
-		}
-		else i += length + 30;
-	    }
-	    else {
-		int length = bytes[i-18];
-
-		i += length + 16;
-	    }
-
-	    totalPackets++;
-	}
-	System.out.println(totalPackets + " " + connections.size() + "\n");
-	
-	String uplink = "", downlink = "";
+	/*String uplink = "", downlink = "";
 	Set<String> keySet = connections.keySet();
 	for (String s : keySet) {
 	    ArrayList<Pair<Integer, Integer>> list = connections.get(s);
@@ -212,16 +316,8 @@ public class TaskTwo {
 	    }
 	}
 
-	System.out.println(uplink + downlink);
-	//TODO: use sequence numbers and acknowledgment numbers to determine order of data in stream
-	//      and output the data for each connection in the right order (in binary?)
-	//remember: the side sending data makes seq number = TCP length + previous seq number and makes ack
-	//          number = ?something?; side sending acknowledgment of receiving data (but not sending data)
-	//          makes received seq number ack number and received ack number seq number (from what I could
-	//          see on wireshark)
-    }
-
-    public static ArrayList<Pair<Integer, Integer>> sort(ArrayList<Pair<Integer, Integer>> list) {
+	System.out.println(uplink + downlink);*/
+  /*public static ArrayList<Pair<Integer, Integer>> sort(ArrayList<Pair<Integer, Integer>> list) {
 	ArrayList<Pair<Integer, Integer>> sorted = new ArrayList<Pair<Integer, Integer>>();
 	
 	for (int i = 0; i < list.size(); i++) {
@@ -268,5 +364,4 @@ public class TaskTwo {
 	}
 
 	return sorted;
-    }
-}
+	}*/
