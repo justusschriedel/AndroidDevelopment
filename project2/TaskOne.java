@@ -11,10 +11,11 @@ public class TaskOne {
     public static void main(String[] args) {
 	int fileSize, totalPackets, totalIP, totalTCP, totalUDP;
 	FileInputStream fromFile;
+	FileOutputStream outputFile;
 	byte[] bytes;
 	HashMap<String, Integer> tcpConn = new HashMap<String, Integer>();
 
-	String fileName = args[0];
+	String fileName = "testdata/task1.test2.pcap";
 
 	File file = new File(fileName);
 	fileSize = Math.toIntExact(file.length());
@@ -65,10 +66,9 @@ public class TaskOne {
 		    else tcpConn.put(connA, 1);
  
 		}
-		else if (protocol == 17 || protocol == 1) {
+		else if (protocol == 17) {
 		    totalUDP++;
 		}
-		//else System.out.println(protocol);
 
 		if ((size+14) < 60) {
 		    int padding = 60 - (size + 14);
@@ -97,7 +97,20 @@ public class TaskOne {
 	    totalPackets++;
 	}
 
-	System.out.println(totalPackets + " " + totalIP + " " + totalTCP + " " + totalUDP + " " + tcpConn.size());
+	String temp = totalPackets + " " + totalIP + " " + totalTCP + " " + totalUDP + " " + tcpConn.size() + "\n";
+	
+	byte[] output = temp.getBytes();
+
+	try {
+	    outputFile = new FileOutputStream("task1_test2.out");
+	    outputFile.write(output);
+	}
+	catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	}
+	catch (IOException e) {
+	    e.printStackTrace();
+	}
 
     }
 
