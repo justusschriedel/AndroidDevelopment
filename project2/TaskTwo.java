@@ -11,7 +11,7 @@ public class TaskTwo {
 	FileOutputStream outputFile;
 	byte[] bytes = new byte[filesize];
 	//HashMap<String, ArrayList<Pair<Integer, Integer>>> connections = new HashMap<String, ArrayList<Pair<Integer, Integer>>>();
-	HashMap<Integer, Pair<String, String>> seqNums = new HashMap<Integer, Pair<String, String>>();
+	HashMap<Integer, Pair<String, String>> seqNums = new HashMap<Integer, Pair<String, String>>(); //key = sequence number, value = tcp connection, total number of bytes sent over link
 
 	try {
 	    fromFile = new FileInputStream(file);
@@ -28,9 +28,12 @@ public class TaskTwo {
 	//int totalPackets = 0;
 	int i = 54;
 	while (i < bytes.length) {
+	    System.out.println("1"); /////
 	    int version = TaskOne.getBitVal(bytes, i, 4, 8);
+	    System.out.println(version);
 
 	    if (version == 4) {
+		System.out.println("ip"); /////
 		int ihl = (TaskOne.getBitVal(bytes, i, 0, 4)*32)/8;
 		int length = TaskOne.get16BitVal(bytes, i+2);
 		int protocol = TaskOne.getBitVal(bytes, i+9, 0, 8);
@@ -44,21 +47,27 @@ public class TaskTwo {
 		    String data = "";
 		    
 		    for (int x = 0; x < 3; x++) {
+			System.out.println("2"); /////
 			srcIP += TaskOne.getBitVal(bytes, i+12+x, 0, 8) + ".";
 			destIP += TaskOne.getBitVal(bytes, i+16+x, 0, 8) + ".";
 		    }
+		    srcIP += TaskOne.getBitVal(bytes, i+12+3, 0, 8) + " ";
+		    destIP += TaskOne.getBitVal(bytes, i+16+3, 0, 8) + " ";
 
 		    for (int x = i+ihl+dataOffset; x < i+length; x++) {
+			System.out.println("3"); /////
 			data += bytes[x];
 		    }
 
 		    String tcpConn = srcIP + srcPort + " " + destIP + destPort;
+		    System.out.println(tcpConn);
 
 		    seqNums.put(seq, new Pair<String, String>(tcpConn, data));  
 		}
 
 		//dealing with padding
 		if ((length+14) < 60) {
+		    System.out.println("p"); /////
 		    int padding = 60 - (length + 14);
 
 		    if ((i+length+padding) < bytes.length) {
@@ -95,10 +104,13 @@ public class TaskTwo {
 	ArrayList<String> data = new ArrayList<String>();
 
 	for (Object x : sortedSeqs) {
+	    System.out.println("4"); /////
 	    Pair<String, String> pair = seqNums.get(x);
 	    String ip = pair.getFirst();
 	    String datum = pair.getSecond();
 
+	    //error: ips and data are becoming different sizes for some reason
+	    //error in else clause
 	    if (!ips.contains(ip)) {
 		ips.add(ip);
 
@@ -107,11 +119,17 @@ public class TaskTwo {
 		ips.removeAll(ips);
 		ips.addAll(temp);
 		System.out.println(ips.indexOf(ip));
-		data.add(ips.indexOf(ip), datum);
+		if (ips.indexOf(ip) < data.size()) {
+		    data.add(ips.indexOf(ip), datum);
+		}
+		else data.add(datum);
+
+		System.out.println(ips.size() + data.size());
 	    }
 	    else {
 		int index = ips.indexOf(ip);
 		String temp = data.get(index) + "" + datum;
+		System.out.println(temp);
 
 		data.remove(index);
 		data.add(index, temp);
@@ -120,6 +138,7 @@ public class TaskTwo {
 
 	String connections = "";
 	for (int y = 0; y < ips.size(); y++) {
+	    System.out.println("5"); /////
 	    String curr = ips.get(y);
 	    
 	    if (!curr.endsWith("80")) {
@@ -127,6 +146,7 @@ public class TaskTwo {
 		String newIP = temp[2] + " " + temp[3] + " " + temp[0] + " " + temp[1];
 
 		for (int z = 0; z < ips.size(); z++) {
+		    System.out.println("6"); /////
 		    String correctIP = ips.get(z);
 
 		    if (newIP.equals(correctIP)) {
@@ -142,7 +162,7 @@ public class TaskTwo {
 			data.add(z, d);
 
 			ips.remove(y);
-			ips.remove(z);
+			//ips.remove(z);
 			data.remove(y);
 
 			break;
@@ -151,8 +171,20 @@ public class TaskTwo {
 	    }
 	}
 
-	//TODO: output connections string and data array list to .out file
-	//TODO: finish sort method
+	/*try {
+	    outputFile = new FileOutputStream("task2_test1.out");
+	    outputFile.write(connections.getBytes());
+
+	    for (int z = 0; z < data.size(); z++) {
+		outputFile.write(data.get(z).getBytes());
+	    }
+	}
+	catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	}
+	catch (IOException e) {
+	    e.printStackTrace();
+	    }*/
 	//TODO: debug/optimize code
 	    
     }
@@ -162,8 +194,18 @@ public class TaskTwo {
 	ArrayList<String> sorted = new ArrayList<String>();
 
 	for (String s : unsorted) {
+	    System.out.println("7"); /////
 	    if (!sorted.isEmpty()) {
-		
+		for (int i = 0; i < sorted.size(); i++) {
+		    System.out.println("8"); /////
+		    if (s.compareTo(sorted.get(i)) <= 0) {
+			sorted.add(i, s);
+			break;
+		    }
+		    else if (i+1 == sorted.size()) {
+			sorted.add(s);
+		    }
+		}
 	    }
 	    else sorted.add(s);
 	}
