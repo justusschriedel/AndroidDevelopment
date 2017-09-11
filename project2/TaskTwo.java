@@ -5,7 +5,7 @@ import java.nio.*;
 public class TaskTwo {
     public static void main(String[] args) {
 	
-	String filename = "test.pcap";
+	String filename = "test2.pcap";
 	File file = new File(filename);
 	int filesize = Math.toIntExact(file.length());
 	FileInputStream fromFile;
@@ -40,6 +40,7 @@ public class TaskTwo {
 		    int srcPort = TaskOne.get16BitVal(bytes, i+ihl);
 		    int destPort = TaskOne.get16BitVal(bytes, i+ihl+2);
 		    int seq = TaskOne.get32BitVal(bytes, i+ihl+4);
+		    System.out.println(seq);
 		    byte[] data = new byte[length-ihl-dataOffset];
 		    
 		    if (srcPort == 80 || destPort == 80) {
@@ -99,6 +100,7 @@ public class TaskTwo {
 	    Pair<String, byte[]> pair = seqNums.get(x);
 	    String ip = pair.getFirst();
 	    byte[] datum = pair.getSecond();
+	    System.out.println(ip);
 
 	    if (!ips.contains(ip)) {
 		ips.add(ip);
@@ -169,9 +171,6 @@ public class TaskTwo {
 			data.remove(y);
 
 			break;
-		    }
-		    else {
-			//System.out.println(newIP + " vs " + correctIP); /////
 		    }
 		}
 	    }
