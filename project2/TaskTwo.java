@@ -215,7 +215,6 @@ public class TaskTwo {
 
 			break;
 		    }
-		    
 		}
 	    }
 	}
@@ -242,7 +241,7 @@ public class TaskTwo {
 	try {
 	    outputFile = new FileOutputStream("task2_test1.out");
 	    outputFile.write(connections.getBytes());
-
+	    
 	    for (int z = 0; z < data.size(); z++) {
 		outputFile.write(data.get(z));
 	    }
