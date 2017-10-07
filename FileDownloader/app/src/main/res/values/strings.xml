@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">File Downloader</string>
+    <string name="editText">Enter Host Name</string>
+    <string name="editText2">Enter Port Number</string>
+    <string name="editText3">Enter File Name</string>
+    <string name="button">Download</string>
+    <string name="button2">Open</string>
+</resources>

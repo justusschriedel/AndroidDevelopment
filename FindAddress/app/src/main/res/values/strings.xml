@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Find Address</string>
+    <string name="editText">Enter Address</string>
+    <string name="button">Find</string>>
+</resources>
