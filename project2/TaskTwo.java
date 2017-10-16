@@ -5,7 +5,7 @@ import java.nio.*;
 public class TaskTwo {
     public static void main(String[] args) {
 	
-	String filename = "testdata/task2.test1.pcap";
+	String filename = "test6.pcap";
 	File file = new File(filename);
 	int filesize = Math.toIntExact(file.length());
 	FileInputStream fromFile;
