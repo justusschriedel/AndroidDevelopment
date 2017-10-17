@@ -5,7 +5,7 @@ import java.nio.*;
 public class TaskTwo {
     public static void main(String[] args) {
 	
-	String filename = "test6.pcap";
+	String filename = "test3.pcap";
 	File file = new File(filename);
 	int filesize = Math.toIntExact(file.length());
 	FileInputStream fromFile;
@@ -170,56 +170,84 @@ public class TaskTwo {
 	    }
 	}
 
+	System.out.println(ips); /////
+
 	//TODO: fix error
-	//some IPs not ending with port 80 are still not being matched to, so they
-	// are still showing up in the ips arraylist
-	//there's an issue with the number of bytes being sent over connection; math
-	// should be right in here, but double check
-	String connections = "";
+	//IPs aren't being matched correctly: some aren't being matched to
+	//there's an issue with the number of bytes being sent over connection
+	
 	for (int y = 0; y < ips.size(); y++) {
+	    String connection = "";
 	    String curr = ips.get(y);
-	    
-	    if (!curr.endsWith(" 80")) {
-		String[] temp = curr.split(" ");
-		String newIP = temp[2] + " " + temp[3] + " " + temp[0] + " " + temp[1];
-		//System.out.println(newIP + " newIP"); /////
+	    String[] s = curr.split(" ");
+	    String newIP = s[2] + " " + s[3] + " " + s[0] + " " + s[1];
 
-		for (int z = 0; z < ips.size(); z++) {
-		    String correctIP = ips.get(z);
+	    if (!curr.endsWith("80") && ips.contains(newIP)) {
+		int index = ips.indexOf(newIP);
+		int uplink = data.get(index).length;
+		int downlink = data.get(y).length;
+		byte[] d = new byte[uplink + downlink];
 
-		    if (newIP.equals(correctIP)) {
-		        int uplink = data.get(z).length;
-			int downlink = data.get(y).length;
-
-			connections += correctIP + " " + uplink + " " + downlink + "\n";
-			//correctIP += " " +  uplink + " " + downlink;
-
-			byte[] d = new byte[data.get(z).length +  data.get(y).length];
-			for (int q = 0; q < d.length; q++) {
-			    if (q < data.get(z).length){
-				d[q] = data.get(z)[q];
-			    }
-			    else {
-				d[q] = data.get(y)[q-data.get(z).length];
-			    }
-			}
-
-			//ips.remove(z);
-			//ips.add(z, correctIP);
-			
-			data.remove(z);
-			data.add(z, d);
-
-			ips.remove(y);
-			data.remove(y);
-
-			break;
+		for (int r = 0; r < d.length; r++) {
+		    if (r < uplink) {
+			d[r] = data.get(index)[r];
 		    }
+		    else {
+			d[r] = data.get(y)[r-uplink];
+		    }
+		}
+
+		connection = newIP + " " + uplink + " " + downlink + "\n";
+
+		ips.remove(index);
+		ips.add(index, connection);
+		
+		data.remove(index);
+		data.add(index, d);
+		
+		ips.remove(y);
+		data.remove(y);
+
+	    }
+	    else if (!curr.endsWith("80") && !curr.endsWith("\n")) {
+		int downlink = data.get(y).length;
+		ips.remove(y);
+		ips.add(y, newIP);
+
+		ArrayList<String> resorted = sortIPs(ips);
+
+		ips.removeAll(ips);
+		ips.addAll(resorted);
+
+		connection = newIP + " 0 " + downlink + "\n";
+		int index = ips.indexOf(newIP);
+		byte[] d = data.get(y);
+
+		ips.remove(index);
+		ips.add(index, connection);
+		
+		data.remove(y);
+		data.add(index, d);
+	    }
+	    else {
+		if (!curr.endsWith("\n")) {
+		    int uplink = data.get(y).length;
+
+		    connection = curr + " " + uplink + " 0\n";
+
+		    ips.remove(y);
+		    ips.add(y, connection);
 		}
 	    }
 	}
 
+	System.out.println(ips);
+
 	//makes connection string to be written to .out file
+	String connections = "";
+	for (int g = 0; g < ips.size(); g++) {
+	    connections += ips.get(g);
+	}
 	
 	//could be used to fix up leftover ips not matched to in
 	// above loop, but probably should not be
@@ -255,6 +283,8 @@ public class TaskTwo {
     }
 
     //sorts elements of given arraylist in ascending order
+    // TODO: fix error
+    // could be error with sorting method causing ips to get out of order
     public static ArrayList<String> sortIPs(ArrayList<String> unsorted) {
 	ArrayList<String> sorted = new ArrayList<String>();
 
@@ -270,6 +300,13 @@ public class TaskTwo {
 			sorted.add(i, s);
 			break;
 		    }
+		    /* else if (Integer.valueOf(newIP[1]).compareTo(Integer.valueOf(sortedIP[1])) == 0){
+			if (Integer.valueOf(newIP[3]).compareTo(Integer.valueOf(sortedIP[3])) < 0) {
+			    sorted.add(i, s);
+			    break;
+			}
+			
+			}*/
 		    else if (i+1 == sorted.size()) {
 			sorted.add(s);
 			break;
@@ -284,104 +321,3 @@ public class TaskTwo {
 	return sorted;
     }
 }
-
-	    /*old code from calculated uplink, downlink data and making connections string
-if (!curr.endsWith(" 80")) {
-		String[] temp = curr.split(" ");
-		String newIP = temp[2] + " " + temp[3] + " " + temp[0] + " " + temp[1];
-		System.out.println(newIP + " newIP"); /////
-
-		for (int z = 0; z < ips.size(); z++) {
-		    String correctIP = ips.get(z);
-
-		    if (newIP.equals(correctIP)) {
-		        int uplink = data.get(z).length;
-			int downlink = data.get(y).length;
-
-			//connections += correctIP + " " + uplink + " " + downlink + "\n";
-			correctIP += " " +  uplink + " " + downlink;
-
-			byte[] d = new byte[data.get(z).length +  data.get(y).length];
-			for (int q = 0; q < d.length; q++) {
-			    if (q < data.get(z).length){
-				d[q] = data.get(z)[q];
-			    }
-			    else {
-				d[q] = data.get(y)[q-data.get(z).length];
-			    }
-			}
-
-			ips.remove(z);
-			ips.add(z, correctIP);
-			
-			data.remove(z);
-			data.add(z, d);
-
-			ips.remove(y);
-			data.remove(y);
-
-			break;
-			}
-		    
-		}
-		}*/
-
-/*
-if (ips.contains(newIP)) {
-		if (temp[1].equals("80")) {
-		    int indexNewIP = ips.indexOf(newIP);
-		    int uplink = data.get(indexNewIP).length;
-		    int downlink = data.get(y).length;
-		    
-		    String correctIP = newIP +  " " +  uplink + " " + downlink;
-		    
-		    byte[] d = new byte[uplink + downlink];
-		    for (int q = 0; q < d.length; q++) {
-			if (q < data.get(indexNewIP).length){
-			    d[q] = data.get(indexNewIP)[q];
-			}
-			else {
-			    d[q] = data.get(y)[q-data.get(indexNewIP).length];
-			}
-		    }
-		    
-		    ips.remove(indexNewIP);
-		    ips.add(indexNewIP, correctIP);
-		    
-		    data.remove(indexNewIP);
-		    data.add(indexNewIP, d);
-		    
-		    ips.remove(y);
-		    data.remove(y);
-		}
-		else {
-		    int indexWrongIP = ips.indexOf(newIP);
-		    int uplink = data.get(y).length;
-		    int downlink = data.get(indexWrongIP).length;
-		    
-		    String correctIP = curr +  " " +  uplink + " " + downlink + " x";
-		    
-		    byte[] d = new byte[uplink + downlink];
-		    for (int q = 0; q < d.length; q++) {
-			if (q < data.get(y).length){
-			    d[q] = data.get(y)[q];
-			}
-			else {
-			    d[q] = data.get(indexWrongIP)[q-data.get(y).length];
-			}
-		    }
-		    
-		    ips.remove(y);
-		    ips.add(y, correctIP);
-		    
-		    data.remove(y);
-		    data.add(y, d);
-		    
-		    ips.remove(indexWrongIP);
-		    data.remove(indexWrongIP);
-		}
-	    }
-	    else {
-		System.out.println("bad"); /////
-	    }
- */
