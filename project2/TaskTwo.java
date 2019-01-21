@@ -40,9 +40,9 @@ public class TaskTwo {
 		    //System.out.println(dataOffset); /////
 		    int srcPort = TaskOne.get16BitVal(bytes, i+ihl);
 		    int destPort = TaskOne.get16BitVal(bytes, i+ihl+2);
-		    int seq = TaskOne.get32BitVal(bytes, i+ihl+4);//bytes[i+ihl+4];
+		    int seq = TaskOne.get32BitVal(bytes, i+ihl+4); //bytes[i+ihl+4];
 		    int ack = TaskOne.get32BitVal(bytes, i+ihl+8);
-		    //System.out.println(seq); /////
+		    //System.out.println(seq + "\n"); /////
 		    //System.out.println(ack); /////
 		    byte[] data = new byte[length-ihl-dataOffset];
 		    
@@ -99,6 +99,12 @@ public class TaskTwo {
 		    } 
 		}
 
+		/*Object[] s = seqNums.keySet().toArray();
+		for (Object x : s) {
+		    System.out.println(x); /////
+		    }*/
+	
+
 		//dealing with padding
 		if ((length+14) < 60) {
 		    int padding = 60 - (length + 14);
@@ -134,6 +140,8 @@ public class TaskTwo {
 	ArrayList<byte[]> data = new ArrayList<byte[]>();
 
 	for (Object x : sortedSeqs) {
+	    System.out.println(x); /////
+	    
 	    Pair<String, byte[]> pair = seqNums.get(x);
 	    String ip = pair.getFirst();
 	    byte[] datum = pair.getSecond();

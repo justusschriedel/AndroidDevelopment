@@ -1,0 +1,54 @@
+import java.io.*;
+import java.net.*;
+
+public class DownloadServer {
+
+    public static void main(String[] args) throws IOException {
+	int portnumber = Integer.parseInt(args[0]);
+	String request;
+	File requestedFile = null;
+
+	ServerSocket welcomeSocket = new ServerSocket(portnumber);
+	//System.out.println("hello");
+
+	while(true) {
+	    Socket connectionSocket = welcomeSocket.accept();
+	    BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+	    PrintWriter textToClient = new PrintWriter(connectionSocket.getOutputStream(), true);
+	    DataOutputStream otherDataToClient = new DataOutputStream(connectionSocket.getOutputStream());
+
+	    //System.out.println("hello");
+	    
+	    request = inFromClient.readLine();
+	    System.out.println("request: " + request);
+	    if (request.contains("file size")) {
+		String[] fileName = request.split(" ");
+
+		System.out.println("file name: " + fileName[fileName.length-1]);
+		
+		requestedFile = new File(fileName[fileName.length-1]);
+
+		textToClient.println("" + requestedFile.length());
+
+		//outToClient.writeBytes("" + requestedFile.length());
+		//outToClient.flush();
+	    }
+	    else if (request.equals("send file")) {
+		FileInputStream fileToClient = new FileInputStream(requestedFile);
+
+		byte[] buffer = new byte[5000];
+		otherDataToClient.flush();
+		while (fileToClient.read(buffer) > 0) {
+		    System.out.println(otherDataToClient.size());
+		    otherDataToClient.write(buffer, 0, fileToClient.read(buffer));
+		    System.out.println(otherDataToClient.size());
+		    otherDataToClient.flush();
+		}
+	    }
+	    else {
+		textToClient.println("invalid request");
+	    }
+	    }
+    }
+
+}

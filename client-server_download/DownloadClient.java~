@@ -1,0 +1,63 @@
+import java.io.*;
+import java.net.*;
+
+public class DownloadClient {
+
+    public static void main(String[] args) throws IOException {
+	String hostname = args[0], file = args[2], request;
+	int portnumber = Integer.parseInt(args[1]), fileSize = 0, bytesRead, totalBytes, remaining;
+
+	Socket clientSocket = new Socket(hostname, portnumber); //creates client socket with given host name and port number
+	BufferedReader userMessage = new BufferedReader(new InputStreamReader(System.in)); //how user communicates requests
+	PrintWriter outToServer = new PrintWriter(clientSocket.getOutputStream(), true); //how user's requests are sent to server
+	BufferedReader textFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	DataInputStream otherDataFromServer = new DataInputStream(clientSocket.getInputStream()); //how client receives response/file from server
+	FileOutputStream fileFromServer = new FileOutputStream(file);  //writes file to saving location?
+
+	do {
+	    request = userMessage.readLine(); //reads user request
+	
+	    System.out.println(request);
+	    if (request.equals("file size")) { //if user requests file size (necessary for knowing when file transfer is over)
+		System.out.println(request + " " + file);
+		outToServer.println(request + " " + file); //sends user request and file name to server
+		fileSize = Math.toIntExact(Long.parseLong(textFromServer.readLine())); //converts and saves file size
+
+		System.out.println(fileSize);
+	    }
+	    else if (request.equals("send file")) { //if user requests file to be sent
+		if (fileSize != 0) { //file size must be greater than 0
+		    outToServer.println(request);
+		    System.out.println("1");
+		    bytesRead = 0; totalBytes = 0; remaining = fileSize;
+		    byte[] buffer = new byte[5000]; //buffer for bytes being sent (whole file won't be sent at one time;
+		                                    //max amount of bytes that can be sent at one time)
+		    System.out.println("2");
+		    do {
+			//bytesRead = otherDataFromServer.readFully(buffer, 0, Math.min(buffer.length, remaining)); //reads bytes of file sent from server (<= 5000 bytes)
+			otherDataFromServer.readFully(buffer, 0, Math.min(buffer.length, remaining));
+			bytesRead = buffer.length;
+			
+			totalBytes += bytesRead; remaining -= bytesRead;
+			fileFromServer.write(buffer, 0, bytesRead); //writes read bytes to file output system (to save in current directory?)
+			System.out.println("only " + remaining + " bytes remaining");
+		    }
+		    while (bytesRead > 0); //if bytes read is 0, file is fully transferred
+
+		    clientSocket.close();
+
+		    System.out.println("file download complete");
+		}
+		else {
+		    System.out.println("please request file size from server");
+		}
+	    }
+	    else {
+		System.out.println("invalid server request");
+	    }
+	}
+	while (!(request.equals("bye")));
+	
+    }
+    
+}
